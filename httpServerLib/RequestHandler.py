@@ -8,11 +8,10 @@ class RequestHandler:
         self.method = ''
         self.path = ''
         self.work_dir = work_dir
-
         self.response_code = 200
         self.response_msg = 'OK'
         self.content = ''
-        self.response = ''
+        self.parse_req()
 
     def parse_req(self):
         parsed_req = self.received_request.split('\r\n')
@@ -30,9 +29,12 @@ class RequestHandler:
         # extracting information from request line
         request_line = request_msg.split(" ")
         self.method = request_line[0]
-
-
         self.path = request_line[1]
+
+        # todo delete these, they are for testing
+        print(self.method)
+        print(self.path)
+        print(self.content)
 
         # assess validity of method
         if self.method != "GET" or self.method != "POST":

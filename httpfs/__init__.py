@@ -1,60 +1,73 @@
 import socket
-import httpServerLib
+from httpServerLib.RequestHandler import RequestHandler
+from httpServerLib.ResponseHandler import ResponseHandler
 import click
 import os
 
 # used path to dir = D:\School_Stuff\Python_Stuff\PythonHttpfs\workdir
 
 
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
+@click.command()
 @click.option('-v', '--verbose', is_flag=True, help="Prints debugging messages")
 @click.option('-p', '--port', default=8080, required=False,
               help="Specifies the port number that the server will listen and serve at.\n Default is 8080.")
 @click.option('-d', '--path', default=os.getcwd(), required=False, type=str,
               help="Specifies the directory that the server will use to read/write requested files.\n Default is the current directory when launching the application.")
-def get(verbose, port, path):
+def cli(verbose, port, path):
     """
-    httpfs is a simple file server.
-    Usage: httpfs [-v] [-p PORT] [-d PATH-TO-DIR]
+    httpfs is a simple file server.Usage: httpfs [-v] [-p PORT] [-d PATH-TO-DIR]
     """
 
+    if verbose:
+        print(port)
+        print(path)
+
     # validate the arguments
-    if not os.path.exists(path):
+    if not os.path.exists(path) and verbose:
         print("Directory could not be found.")
 
     # next create a socket object
     s = socket.socket()
-    print("Socket successfully created")
+    if verbose:
+        print("Socket successfully created")
 
-    s.bind(('', port))
-    print("socket binded to %s" % port)
+    host = "localhost"
+    s.bind((host, port))
+
+    if verbose:
+        print("socket binded to %s" % port)
 
     # put the socket into listening mode
-    s.listen()
-    print("socket is listening")
+    s.listen(5)
+    if verbose:
+        print("socket is listening")
 
-    # a forever loop until we interrupt it or
-    # an error occurs
-    while True:
-        # Establish connection with client.
-        c, addr = s.accept()
-        print('Got connection from', addr)
+    # Establish connection with client.
+    c, addr = s.accept()
+    print('Got connection from', addr)
 
+    while 1:
         content = c.recv(4096)
         while len(content):
             content = c.recv(4096)
+        if content == 0:
+            break
 
-        # TODO make the connection send back the response
-        # send a thank you message to the client.
-        c.send('Thank you for connecting')
+    # read request
+    req_hand = RequestHandler(content, path)
 
-        # Close the connection with the client
-        c.close()
+    if verbose:
+        print(req_hand.method)
+        print(req_hand.response_code)
+        print(req_hand.response_msg)
+
+    # create response
+        resp_handler = ResponseHandler(req_hand)
+
+        # send response
+        c.sendall(resp_handler.encode_request())
+
+    c.close()
 
 
 if __name__ == '__main__':
