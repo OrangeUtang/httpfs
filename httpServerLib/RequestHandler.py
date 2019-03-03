@@ -20,6 +20,7 @@ class RequestHandler:
         # dividing request in head and body
         head = parsed_req[0]
         body = ''
+
         if len(parsed_req) > 1:
             body = parsed_req[1]
 
@@ -29,6 +30,8 @@ class RequestHandler:
         # extracting information from request line
         request_line = request_msg.split(" ")
         self.method = request_line[0]
+
+
         self.path = request_line[1]
 
         # assess validity of method
@@ -78,5 +81,3 @@ class RequestHandler:
                     # TODO adding return statement here would probably be good
 
         # TODO adding return statement here would probably be good
-        # TODO headers?
-

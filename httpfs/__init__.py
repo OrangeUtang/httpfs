@@ -1,10 +1,11 @@
 import socket
-import httpfs
+import httpServerLib
 import click
 import os
 
-
 # used path to dir = D:\School_Stuff\Python_Stuff\PythonHttpfs\workdir
+
+
 @click.group()
 def cli():
     pass
@@ -44,9 +45,9 @@ def get(verbose, port, path):
         c, addr = s.accept()
         print('Got connection from', addr)
 
-        content = c.recv(32)
+        content = c.recv(4096)
         while len(content):
-            content = c.recv(32)
+            content = c.recv(4096)
 
         # TODO make the connection send back the response
         # send a thank you message to the client.
