@@ -14,7 +14,7 @@ class RequestHandler:
         self.parse_req()
 
     def parse_req(self):
-        parsed_req = self.received_request.split('\r\n')
+        parsed_req = self.received_request.split('\r\n\r\n')
 
         # dividing request in head and body
         head = parsed_req[0]
@@ -27,9 +27,12 @@ class RequestHandler:
         request_msg = head.split("\n")
 
         # extracting information from request line
-        request_line = request_msg.split(" ")
+        request_line = request_msg[0].split(" ")
         self.method = request_line[0]
-        self.path = request_line[1]
+        if request_line[1] == "/" or len(request_line) < 3:
+            self.path = "\\"
+        else:
+            self.path = request_line[1]
 
         # todo delete these, they are for testing
         print(self.method)
@@ -37,9 +40,11 @@ class RequestHandler:
         print(self.content)
 
         # assess validity of method
-        if self.method != "GET" or self.method != "POST":
+        if self.method != "GET" and self.method != "POST":
             self.response_code = 400
             self.response_msg = 'Bad Request'
+            self.content = "error 400 Bad Request"
+            return
 
         # check if path exists within the designated workspace
         full_path = self.work_dir + self.path
@@ -47,10 +52,19 @@ class RequestHandler:
 
         # retrieve content for GET /
         if self.method == "GET":
-            if len(request_line) < 3:
+            # make sure the path is /
+            if self.path == "\\":
+
+                # get all file from directory
                 dir_list = os.listdir(self.work_dir)
-                self.content = "Files:\r\n" + dir_list[0] + "\r\n" + dir_list[1]
-                # TODO adding return statement here would probably be good
+
+                # start content data
+                self.content = f"Files:\r\n"
+
+                # get all the file names
+                for k in dir_list:
+                    self.content += f"{k}\r\n"
+                return
 
             # retrieve content for GET / %FILE%
             else:
@@ -58,28 +72,31 @@ class RequestHandler:
                 if not os.path.exists(full_path):
                     self.response_code = 404
                     self.response_msg = 'Not Found'
+                    self.content = "error 404 File not Found"
+                    return
 
                 with open(full_path, 'r') as a_file:
                     try:
                         self.content = a_file.read()
                     except:
                         print("File can't be read.")
-                # TODO adding return statement here would probably be good
+                return
 
         # retrieve content for POST / %FILE%
         if self.method == "POST":
             if len(request_line) < 3:
-                self.response_code = 404
-                self.response_msg = 'Not Found'
-                # TODO adding return statement here would probably be good
+                self.response_code = 400
+                self.response_msg = 'Bad Request'
+                self.content = "error 400 Bad Request"
+                return
 
             # try to write to the db
             with open(full_path, 'w') as a_file:
                 try:
-                    self.content = a_file.write(body)
+                    a_file.write(body)
                 except:
                     self.response_code = 404
                     self.response_msg = 'Not Found'
-                    # TODO adding return statement here would probably be good
-
-        # TODO adding return statement here would probably be good
+                    self.content = "error 404 File not Found"
+                    return
+        return

@@ -15,7 +15,7 @@ class ResponseHandler:
         http_response = f"HTTP/1.0 {self.response_code} {self.response_msg}\r\n"
         http_response += "Server: httpfs/0.1\r\n"
         http_response += f"{self.generate_time_header()}\r\n"
-        http_response += f"Content-Length: {str(len(self.content))}\r\n"
+        http_response += f"Content-Length: {str(self.content)}\r\n"
         http_response += "\r\n"
         http_response += f"{self.content}"
         return http_response

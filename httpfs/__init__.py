@@ -42,32 +42,23 @@ def cli(verbose, port, path):
     if verbose:
         print("socket is listening")
 
-    # Establish connection with client.
-    c, addr = s.accept()
-    print('Got connection from', addr)
-
     while 1:
+        c, addr = s.accept()
+        print('Got connection from', addr)
+
         content = c.recv(4096)
-        while len(content):
-            content = c.recv(4096)
-        if content == 0:
-            break
+        # read request
+        req_hand = RequestHandler(content, path)
 
-    # read request
-    req_hand = RequestHandler(content, path)
+        if verbose:
+            print(f"{req_hand.method} {req_hand.response_code} {req_hand.response_msg}")
 
-    if verbose:
-        print(req_hand.method)
-        print(req_hand.response_code)
-        print(req_hand.response_msg)
-
-    # create response
+        # create response
         resp_handler = ResponseHandler(req_hand)
 
         # send response
         c.sendall(resp_handler.encode_request())
-
-    c.close()
+        c.close()
 
 
 if __name__ == '__main__':
