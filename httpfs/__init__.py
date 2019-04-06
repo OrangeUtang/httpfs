@@ -4,6 +4,8 @@ from httpServerLib.ResponseHandler import ResponseHandler
 import click
 import os
 
+# used path to dir = D:\School_Stuff\Python_Stuff\PythonHttpfs\workdir
+
 
 @click.command()
 @click.option('-v', '--verbose', is_flag=True, help="Prints debugging messages")

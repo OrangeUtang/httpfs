@@ -34,11 +34,6 @@ class RequestHandler:
         else:
             self.path = request_line[1]
 
-        # todo delete these, they are for testing
-        print(self.method)
-        print(self.path)
-        print(self.content)
-
         # assess validity of method
         if self.method != "GET" and self.method != "POST":
             self.response_code = 400
@@ -48,7 +43,13 @@ class RequestHandler:
 
         # check if path exists within the designated workspace
         full_path = self.work_dir + self.path
-        print(full_path)
+
+        illegal_access = ".."
+        if illegal_access in self.path:
+            self.response_code = 400
+            self.response_msg = 'Bad Request'
+            self.content = "error 400 Bad Request"
+            return
 
         # retrieve content for GET /
         if self.method == "GET":
